@@ -1,0 +1,64 @@
+================================================================================
+  RÉSUMÉ : CHANGEMENT DE NOM DE BASE DE DONNÉES
+  gestion_taches → taches
+================================================================================
+
+✅ ÉTAT ACTUEL
+   - Base "gestion_taches" : existe mais vide (0 tables)
+   - Base "taches" : existe déjà
+   - Configuration actuelle : pointe vers SQLite
+
+✅ ACTIONS À EFFECTUER
+
+1. MODIFIER LE FICHIER .env
+   Ouvrez le fichier .env à la racine du projet et changez :
+   
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=taches          ← CHANGEZ ICI
+   DB_USERNAME=root
+   DB_PASSWORD=
+
+2. VIDER LE CACHE
+   php artisan config:clear
+
+3. EXÉCUTER LES MIGRATIONS
+   php artisan migrate:fresh --seed
+
+4. VÉRIFIER DANS PHPMYADMIN
+   - Ouvrez http://localhost/phpmyadmin
+   - Cliquez sur "taches" dans le menu de gauche
+   - Vous devriez voir 26 tables
+
+================================================================================
+  FICHIERS MIS À JOUR
+================================================================================
+
+✅ setup_mysql.sql - Maintenant crée la base "taches"
+✅ show_tables_mysql.php - Recherche maintenant "taches"
+✅ CHANGER_NOM_BASE.md - Guide complet
+✅ changer_nom_base.php - Script de vérification
+✅ renommer_base_taches.sql - Script SQL
+
+================================================================================
+  VÉRIFICATION
+================================================================================
+
+Après avoir modifié .env et exécuté les migrations, vérifiez :
+
+1. Dans phpMyAdmin :
+   - Base "taches" visible
+   - 26 tables présentes
+
+2. Via Laravel :
+   php artisan db:show
+   → Devrait afficher : Database: taches
+
+3. Test de connexion :
+   php artisan tinker
+   DB::connection()->getDatabaseName();
+   → Devrait retourner : "taches"
+
+================================================================================
+
