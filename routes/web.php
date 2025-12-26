@@ -12,7 +12,7 @@ use App\Http\Controllers\AdminController;
 
 // Routes publiques
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('home');
 });
 
 Route::middleware('guest')->group(function () {
@@ -33,6 +33,8 @@ Route::middleware(['auth', 'user'])->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::post('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
     Route::post('/tasks/{task}/comment', [TaskController::class, 'storeComment'])->name('tasks.comment');
+    Route::get('/tasks/{task}/respond', [TaskController::class, 'respond'])->name('tasks.respond');
+    Route::post('/tasks/{task}/respond', [TaskController::class, 'storeResponse'])->name('tasks.respond.store');
     
     // Messages
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');

@@ -266,5 +266,81 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.show', $task)->with('success', 'Votre réponse a été ajoutée et la tâche a été marquée comme terminée!');
     }
+
+    public function respond(Task $task)
+    {
+        // Vérifier que l'utilisateur est bien celui assigné à la tâche
+        if (Auth::user()->id !== $task->assigned_to) {
+            abort(403, 'Vous n\'êtes pas autorisé à répondre à cette tâche.');
+        }
+
+        // Vérifier que la tâche n'est pas déjà terminée
+        if ($task->status === 'terminé') {
+            return redirect()->route('tasks.show', $task)->with('error', 'Cette tâche est déjà terminée.');
+        }
+
+        return view('tasks.respond', compact('task'));
+    }
+
+    public function storeResponse(Request $request, Task $task)
+    {
+        // Vérifier que l'utilisateur est bien celui assigné à la tâche
+        if (Auth::user()->id !== $task->assigned_to) {
+            abort(403, 'Vous n\'êtes pas autorisé à répondre à cette tâche.');
+        }
+
+        // Vérifier que la tâche n'est pas déjà terminée
+        if ($task->status === 'terminé') {
+            return redirect()->route('tasks.show', $task)->with('error', 'Cette tâche est déjà terminée.');
+        }
+
+        $request->validate([
+            'response' => 'required|string|max:1000',
+            'file' => 'nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif',
+        ]);
+
+        // Gérer l'upload du fichier
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('task_responses', $fileName, 'public');
+        }
+
+        // Ajouter la réponse comme commentaire
+        TaskComment::create([
+            'task_id' => $task->id,
+            'user_id' => Auth::id(),
+            'comment' => $request->response,
+            'fichier_joint' => $filePath,
+        ]);
+
+        // Mettre à jour le statut de la tâche
+        $oldStatus = $task->status;
+        $task->update(['status' => 'terminé']);
+
+        // Historique des modifications
+        TaskHistory::create([
+            'task_id' => $task->id,
+            'user_id' => Auth::id(),
+            'action' => 'changement_statut',
+            'ancienne_valeur' => $oldStatus,
+            'nouvelle_valeur' => 'terminé',
+        ]);
+
+        // Notification au créateur de la tâche
+        if ($task->created_by !== Auth::id()) {
+            Notification::create([
+                'user_id' => $task->created_by,
+                'type' => 'tache_terminee',
+                'titre' => 'Tâche terminée',
+                'contenu' => "La tâche '{$task->titre}' a été marquée comme terminée par {$task->assignedUser->full_name}",
+                'lien' => route('tasks.show', $task->id),
+                'data' => ['task_id' => $task->id],
+            ]);
+        }
+
+        return redirect()->route('tasks.show', $task)->with('success', 'Votre réponse a été ajoutée et la tâche a été marquée comme terminée!');
+    }
 }
 

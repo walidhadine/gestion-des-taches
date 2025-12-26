@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('title', $task->titre)
 
@@ -86,10 +86,39 @@
                     </div>
                     <p class="mt-2">{{ $comment->comment }}</p>
                     @if($comment->fichier_joint)
-                    <div class="mt-2">
-                        <a href="{{ asset('storage/' . $comment->fichier_joint) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-paperclip"></i> Fichier joint
-                        </a>
+                    <div class="mt-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-file-earmark text-primary fs-4"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">Fichier joint</h6>
+                                        <p class="mb-0 text-muted small">
+                                            {{ basename($comment->fichier_joint) }}
+                                        </p>
+                                        <p class="mb-0 text-muted small">
+                                            Taille: {{ @filesize(storage_path('app/public/' . $comment->fichier_joint)) ? number_format(@filesize(storage_path('app/public/' . $comment->fichier_joint)) / 1024, 2) . ' KB' : 'Inconnue' }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <a href="{{ asset('storage/' . $comment->fichier_joint) }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-primary me-2" 
+                                           title="Voir le fichier">
+                                            <i class="bi bi-eye"></i> Voir
+                                        </a>
+                                        <a href="{{ asset('storage/' . $comment->fichier_joint) }}" 
+                                           download="{{ basename($comment->fichier_joint) }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Télécharger le fichier">
+                                            <i class="bi bi-download"></i> Télécharger
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @endif
                 </div>
